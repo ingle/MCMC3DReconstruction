@@ -1,6 +1,8 @@
 # set.seed(10)
 # source('makeAB.R')
 # source('getEllipseData.R')
+#
+library('VGAM')
 # 
 # a=1
 # b=2
@@ -13,13 +15,13 @@
 # ellipsdat <- getEllipseData(a=a,b=b,limX=limX,limY=limY,N=N)
 # vec = list(xvec=seq(-limX,limX,,Nx), yvec=seq(-limY,limY,,Ny))
 # AB <- makeAB(vec=vec, dat=ellipsdat)
-# lam=0.1
+# lam=10
 # sig=0.1
 # ellipsdat$fdatn <- ellipsdat$fdat + rnorm(ellipsdat$fdat,sd=sig)
 # 
 # library('Matrix')
 # vec$fvec <- solve( t(AB$A)%*%AB$A + lam*(t(AB$B)%*%AB$B), t(AB$A)%*%ellipsdat$fdatn )
-# vec$fvec <- t(matrix(vec$fvec, nrow=Ny))
+# vec$fvec <- matrix(vec$fvec, nrow=Ny)
 # 
 # cat('now creating initial state\n')
 # x0 <- matrix(0, nrow=Ny, ncol=Nx)
@@ -47,17 +49,21 @@ x0 = as.vector(x0init)
 # image(x=vec$xvec,y=vec$yvec,z=vec$fvec, asp=1.5)
 
 # mcmc loop
-# x0 <- runif(n=Ny*Nx,min=0, max=2)
+x0 <- runif(n=Ny*Nx,min=0, max=2)
 MAXITER <- 100
 updtcnt = 0
 for ( i in seq(1,MAXITER) )
 {
     for (randind in seq(1,Ny*Nx))
     {
-        xr <- rnorm(n=Ny*Nx, mean=x0, sd=1.5)
+        #xr <- rnorm(n=Ny*Nx, mean=x0, sd=1.5)
         #randind <- sample.int(Ny*Nx, size=2)
+        
+        nbd = 200
+        indvec <- seq( max(1,randind-nbd), min(Ny*Nx,randind+nbd) )
+        subvec <- solve( M[indvec,indvec], c[indvec] )
         x1 <- x0
-        x1[randind] <- xr[randind]
+        x1[indvec] <- rlaplace(n=length(indvec), loc=as.vector(subvec), scale=0.1/log(exp(i)) )
         expo <- -1/sig^2*(norm(AB$A%*%x1-ellipsdat$fdatn,type='f')^2
                           -norm(AB$A%*%x0-ellipsdat$fdatn,type='f')^2)
                 -lam    *(norm(AB$B%*%x1,type='f')^2
