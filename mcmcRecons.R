@@ -54,16 +54,29 @@ MAXITER <- 100
 updtcnt = 0
 for ( i in seq(1,MAXITER) )
 {
-    for (randind in seq(1,Ny*Nx))
+    for (randind in sample(seq(1,Ny*Nx)))
     {
         #xr <- rnorm(n=Ny*Nx, mean=x0, sd=1.5)
         #randind <- sample.int(Ny*Nx, size=2)
         
-        nbd = 200
+        nbd = 1000
         indvec <- seq( max(1,randind-nbd), min(Ny*Nx,randind+nbd) )
         subvec <- solve( M[indvec,indvec], c[indvec] )
         x1 <- x0
-        x1[indvec] <- rlaplace(n=length(indvec), loc=as.vector(subvec), scale=0.1/log(exp(i)) )
+        # only replace a subset around the center in indvec
+        if ( randind-nbd/2 >=1 && randind+nbd/2 <= Ny*Nx )
+        {
+            subindvec <- seq( randind-nbd/2, randind+nbd/2 )
+            #x1[subindvec] <- subvec[seq(length(subvec)/2-nbd/2, length(subvec)/2+nbd/2)]
+            x1[indvec] <- rlaplace(n=length(subindvec), 
+                        loc = as.vector(subvec[seq(length(subvec)/2-nbd/2, length(subvec)/2+nbd/2)]),
+                        scale=0.1/log(exp(i)) )
+        }
+        else
+        {
+            #x1[indvec] <- as.vector(subvec)
+            x1[indvec] <- rlaplace(n=length(indvec), loc=as.vector(subvec), scale=0.1/log(exp(i)) )
+        }
         expo <- -1/sig^2*(norm(AB$A%*%x1-ellipsdat$fdatn,type='f')^2
                           -norm(AB$A%*%x0-ellipsdat$fdatn,type='f')^2)
                 -lam    *(norm(AB$B%*%x1,type='f')^2

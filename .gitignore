@@ -2,3 +2,7 @@
 *.eps
 *.exe
 *.bin
+.RData
+.Rhistory
+.nfs*
+
