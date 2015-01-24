@@ -1,3 +1,5 @@
+# Here we will use the ICM method shown here:
+# http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/AV0809/ORCHARD/restore_image.html
 # set.seed(10)
 # source('makeAB.R')
 # source('getEllipseData.R')
