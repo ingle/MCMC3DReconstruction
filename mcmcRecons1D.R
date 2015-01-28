@@ -2,7 +2,7 @@
 # http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/AV0809/ORCHARD/restore_image.html
 set.seed(10)
 #set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-source('makeAB.R')
+source('makeAB_1D.R')
 source('getSquareWaveData.R')
 
 library('VGAM')
@@ -64,38 +64,28 @@ print(gp)
 #
 source('optfun.R')
 
-#x0 <- runif(n=Nx,min=0, max=2)
-x0 <- x0init
+bestval <- optfun( as.vector(vec$fvec) )
+nnbval  <- optfun( as.vector(x0init) )
+
+x0 <- runif(n=Nx,min=0, max=2)
+#x0 <- x0init
 MAXITER <- 100
 updtcnt = 0
 for ( i in seq(1,MAXITER) )
 {
-    for (randind in sample(seq(1,Nx)))
+    for ( randind in seq(1,Nx) )
     {
-        #xr <- rnorm(n=Ny*Nx, mean=x0, sd=1.5)
-        #randind <- sample.int(Ny*Nx, size=2)
-        
-        nbd = 200
-        indvec <- seq( max(1,randind-nbd), min(Nx,randind+nbd) )
-        subvec <- solve( M[indvec,indvec], c[indvec] )
-        x1 <- x0
+        wt <- 0.0001 * (i<30) + 100000 * (i>=30)
+        dx <- mean( diff( vecdf$xvec ) )
 
-        nbdwrite = 20 
-        # only replace a subset around the center in indvec
-        if ( randind-nbdwrite>=1 && randind+nbdwrite <= Nx )
-        {
-            subindvec <- seq( randind-nbdwrite, randind+nbdwrite )
-            x1[subindvec] <- subvec[seq(length(subvec)/2-nbdwrite, length(subvec)/2+nbdwrite)]
-            #x1[indvec] <- rlaplace(n=length(subindvec), 
-            #            loc = as.vector(subvec[seq(length(subvec)/2-nbd/2, length(subvec)/2+nbd/2)]),
-            #            scale=0.1/log(exp(i)) )
-        }
-        else
-        {
-            x1[indvec] <- as.vector(subvec)
-            #x1[indvec] <- rlaplace(n=length(indvec), loc=as.vector(subvec), scale=0.1/log(exp(i)) )
-        }
-        expo <- -1/sig^2*(norm(AB$A%*%x1-sqrdat$fdatn,type='f')^2
+        x1 <- x0
+        dif <- abs(vecdf$xvec[randind] - sqrdat$xdat)
+        nearDat <- sqrdat$fdatn[ which(dif==min(dif)) ]
+        stopifnot( length(nearDat)==1 )
+
+        x1[randind] = ( dx^2 * nearDat + 2*wt * ( x0[min(Nx,randind+1)]+x0[max(1,randind-1)] ))/(4*wt + dx^2)
+
+        expo <- - (norm(AB$A%*%x1-sqrdat$fdatn,type='f')^2
                           -norm(AB$A%*%x0-sqrdat$fdatn,type='f')^2)
                 -lam    *(norm(AB$B%*%x1,type='f')^2
                           -norm(AB$B%*%x1,type='f')^2)
@@ -103,6 +93,8 @@ for ( i in seq(1,MAXITER) )
         u = runif(1)
 
         #if (log(u)<logr & optfun(x1) < optfun(x0))
+        #if ( log(u) < logr )
+        #if( 1 )
         if ( log(u) < logr )
         {
             x0<-x1
@@ -111,9 +103,11 @@ for ( i in seq(1,MAXITER) )
         }
         if( runif(1)<1/200 )
         {
-            plot( x=vec$xvec, y=x0 )
+            plot( x=vec$xvec, y=x0, ylim=c(-1e-2,1.1) )
             #image(x=vec$xvec, y=vec$yvec, z=t(matrix(x0, nrow=Ny)))
-            title(main=paste('iter ',i,'updated ',updtcnt,' new fnval = ',optfun(x0),'\n'))
+            title(main=paste('iter ',i,'updated ',updtcnt,'wt=', wt,'\n',
+                             'new fnval = ',optfun(x0),'\n',
+                             'bestval = ', bestval, 'nnbval = ', nnbval))
         }
     }
 }
