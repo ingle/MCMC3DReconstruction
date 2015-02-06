@@ -1,4 +1,4 @@
-makeAB <- function( vec, dat, verbose=FALSE )
+makeAB2D <- function( vec, dat, verbose=FALSE )
 {
     if(verbose)
     {

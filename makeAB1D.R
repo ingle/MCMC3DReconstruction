@@ -6,7 +6,7 @@
 # the code in makeAB() except, we have gotten
 # rid of Ny, and X plays the role of Y.
 
-makeAB_1D <- function( vec, dat, verbose=FALSE )
+makeAB1D <- function( vec, dat, verbose=FALSE )
 {
     if(verbose)
     {

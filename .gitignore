@@ -10,4 +10,6 @@
 .nfs*
 .swp
 .swo
+.Rapp.history
+
 
