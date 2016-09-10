@@ -1,5 +1,5 @@
 getEllipsoidData <- function(a,b,c,limX,limY,limZ, N)
-# Samples an ellipse function given by:
+# Samples an ellipsoid function given by:
 # fdat = 1 if xdat.^2/a^2 + ydat.^2/b^2 + zdat.^2/c^2 <= 1
 # else fdat = 0.
 #
