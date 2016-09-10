@@ -1,3 +1,7 @@
+tags
+*.out
+*.pyc
+*.Rout
 *.dump
 *.csv
 *.swp
@@ -16,5 +20,4 @@
 .swp
 .swo
 .Rapp.history
-
 
