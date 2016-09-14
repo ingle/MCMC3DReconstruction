@@ -35,3 +35,23 @@ sigmoid <- function( x, alph=1.0, c=0.0, scale=1.0, offset=0.0 )
 {
     val <- offset + scale * (1.0 - 1.0/(1.0 + exp(-alph*(x-c))))
 }
+
+getSmoothEllipsoidSheafDataCylBore <- function(P, RhoMax=2, NRho=50, ZMax=4.5, NZ=100, a=1, b=1, c=1.5, zshift=2.25)
+{
+    dat <- getSmoothEllipsoidSheafData(P, RhoMax, NRho, ZMax, NZ, a, b, c, zshift)
+    # shift for cylinder
+
+    y0 = 3*b/4 
+    z0 = zshift-c/2
+
+    cylR = c/4
+    for( i in seq(length(dat$fdat)) )
+    {
+       if( (dat$ydat[i]-y0)^2 + (dat$zdat[i]-z0)^2 <= cylR^2 )
+       {
+          dat$fdat[i] = 0;
+       }
+    }
+    dat
+}
+

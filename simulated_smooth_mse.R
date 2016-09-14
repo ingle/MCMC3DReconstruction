@@ -37,7 +37,17 @@ if (!file.exists('simulatedsmoothmseresults.RData'))
     grid <- expand.grid( vec$yvec, vec$xvec, vec$zvec )
     colnames(grid) <- c("ygrid", "xgrid", "zgrid")
     ftrue <- rep(1, length(grid$xgrid))
-    ftrue[grid$xgrid^2/a^2 + grid$ygrid^2/b^2 + (grid$zgrid-zshift)^2/c^2 <=1] <- 4
+    #ftrue[grid$xgrid^2/a^2 + grid$ygrid^2/b^2 + (grid$zgrid-zshift)^2/c^2 <=1] <- 4
+    for ( i in seq(length(ftrue)) )
+    {
+        scaled_square_dist <- grid$xgrid[i]^2/a^2 + grid$ygrid[i]^2/b^2 + (grid$zgrid[i]-zshift)^2/c^2
+        cpt = 1.0
+        alph = -1/0.25*log(1/0.99-1)
+        scale = 3.0
+        offset = 1.0 # TODO these must be changed to match values in getSmoothEllipsoidSheafData.R
+        warning('cpt, alph, scale, offset mismanaged. must copy them them getSmoothEllipsoidSheafData.')
+        ftrue[i] <- sigmoid( scaled_square_dist, alph, cpt, scale, offset )
+    }
     ftrue3d <- array( ftrue, c(Ny,Nx,Nz) )
 
     mse = array(0, dim=c(2,NSIMS,length(P),length(SNR)))
